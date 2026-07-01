@@ -4,167 +4,99 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Truck Runtime Pro</title>
-
-<link rel="apple-touch-icon" href="truck-icon.png">
-<link rel="icon" type="image/png" href="truck-icon.png">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Truck Runtime">
-<meta name="theme-color" content="#0f172a">
+<title>Truck Runtime X Ultra</title>
 
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 
 body{
-background:linear-gradient(180deg,#0f172a,#1e293b);
-min-height:100vh;
-padding:15px;
+background:#020617;
 color:white;
+padding:15px;
 }
 
 .container{
-max-width:650px;
+max-width:900px;
 margin:auto;
 }
 
-.header{
+h1{
 text-align:center;
-margin-bottom:20px;
-}
-
-.header h1{
-font-size:42px;
-margin-bottom:5px;
-}
-
-.header p{
-color:#94a3b8;
+color:#4ade80;
+margin-bottom:10px;
 }
 
 .card{
-background:#111827;
-border-radius:20px;
-padding:25px;
-box-shadow:0 0 30px rgba(0,0,0,.35);
-}
-
-label{
-display:block;
-font-size:22px;
-font-weight:bold;
-margin-top:15px;
-margin-bottom:10px;
+background:#020617;
+border:1px solid #1f2937;
+border-radius:16px;
+padding:15px;
+margin-bottom:15px;
 }
 
 input{
 width:100%;
-height:80px;
-font-size:30px;
+padding:12px;
+margin-top:5px;
+margin-bottom:10px;
+border-radius:10px;
+background:#020617;
+border:1px solid #1f2937;
+color:#4ade80;
+font-size:18px;
+text-align:center;
+}
+
+button{
+padding:10px;
 border:none;
-border-radius:15px;
-padding:15px;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.addBtn{background:#22c55e;color:black;width:100%;}
+.removeBtn{background:#ef4444;color:white;}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+.runtimeBar{
+height:10px;
 background:#1f2937;
-color:white;
+border-radius:10px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.fill{
+height:100%;
+background:#22c55e;
 }
 
 .result{
-margin-top:25px;
-padding:25px;
-border-radius:20px;
-background:#052e16;
 text-align:center;
-border:2px solid #22c55e;
+margin-top:15px;
 }
 
-.result-title{
-font-size:20px;
-color:#d1fae5;
-}
-
-.runtime{
-font-size:60px;
-font-weight:bold;
-margin-top:10px;
+.total{
+font-size:40px;
 color:#4ade80;
 }
 
-.decimal{
-font-size:28px;
-margin-top:10px;
+.small{
+opacity:.7;
 }
 
-.overtime{
-margin-top:15px;
-font-size:20px;
-font-weight:bold;
-}
-
-.normal{
-color:#22c55e;
-}
-
-.warning{
-color:#fbbf24;
-}
-
-.buttons{
-display:flex;
-gap:10px;
-margin-top:20px;
-}
-
-button{
-flex:1;
-height:65px;
-font-size:22px;
-font-weight:bold;
-border:none;
-border-radius:15px;
-cursor:pointer;
-}
-
-.now{
-background:#2563eb;
-color:white;
-}
-
-.reset{
-background:#dc2626;
-color:white;
-}
-
-.footer{
+.mode{
 text-align:center;
-margin-top:15px;
-color:#94a3b8;
-}
-
-@media (max-width:600px){
-
-.header h1{
-font-size:34px;
-}
-
-.runtime{
-font-size:50px;
-}
-
-input{
-height:75px;
-font-size:26px;
-}
-
-button{
-font-size:18px;
-}
-
+margin-bottom:10px;
+cursor:pointer;
+padding:8px;
+background:#1f2937;
+border-radius:10px;
 }
 
 </style>
@@ -174,170 +106,162 @@ font-size:18px;
 
 <div class="container">
 
-<div class="header">
-<h1>🚛 Truck Runtime Pro</h1>
-<p>Fleet Runtime Calculator</p>
+<h1>🚛 Truck Runtime Ultra</h1>
+
+<div class="mode" onclick="toggleMode()" id="modeBtn">
+15 MIN MODE
 </div>
 
-<div class="card">
+<div id="entries"></div>
 
-<label>Start Time</label>
-<input type="time" id="startTime" step="900">
+<button class="addBtn" onclick="addEntry()">+ Add Runtime Block</button>
 
-<label>End Time</label>
-<input type="time" id="endTime" step="900">
+<div class="card result">
+<div class="total" id="total">0h 0m</div>
 
-<div class="buttons">
-<button class="now" onclick="setCurrentTime()">Use Current Time</button>
-<button class="reset" onclick="resetForm()">Reset</button>
+<div class="small" id="decimal">0.00 Hours</div>
+<div class="small" id="quarter">Quarter: 0.00</div>
+
+<div id="status" class="small">Ready</div>
+
+<div class="runtimeBar">
+<div id="barFill" class="fill" style="width:0%"></div>
 </div>
 
-<div class="result">
-
-<div class="result-title">
-TOTAL RUNTIME
-</div>
-
-<div class="runtime" id="result">
-0h 0m
-</div>
-
-<div class="decimal" id="decimal">
-0.00 Hours
-</div>
-
-<div class="overtime normal" id="overtime">
-Ready
-</div>
-
-</div>
-
-</div>
-
-<div class="footer">
-Save to Home Screen for App-Like Experience
 </div>
 
 </div>
 
 <script>
+let stepMode = 15; // minutes default
+let entries = [];
 
-document.getElementById("startTime").addEventListener("change", calculateTime);
-document.getElementById("endTime").addEventListener("change", calculateTime);
-
-function calculateTime(){
-
-const start=document.getElementById("startTime").value;
-const end=document.getElementById("endTime").value;
-
-if(!start || !end){
-return;
+function toggleMode(){
+stepMode = stepMode === 15 ? 1 : 15;
+document.getElementById("modeBtn").innerText =
+stepMode===15 ? "15 MIN MODE" : "1 MIN MODE";
 }
 
-const startDate=new Date("2025-01-01T"+start);
-const endDate=new Date("2025-01-01T"+end);
+function addEntry(start="", end=""){
+let id = Date.now();
 
-let diff=endDate-startDate;
+entries.push({id,start,end});
 
-if(diff<0){
-diff+=24*60*60*1000;
+render();
 }
 
-const hours=Math.floor(diff/(1000*60*60));
-
-const minutes=Math.floor(
-(diff%(1000*60*60))/(1000*60)
-);
-
-const decimalHours=(diff/(1000*60*60)).toFixed(2);
-
-document.getElementById("result").innerHTML=
-hours+"h "+minutes+"m";
-
-document.getElementById("decimal").innerHTML=
-decimalHours+" Hours";
-
-const overtime=document.getElementById("overtime");
-
-if(decimalHours>=12){
-overtime.className="overtime warning";
-overtime.innerHTML="⚠ Long Shift";
-}else{
-overtime.className="overtime normal";
-overtime.innerHTML="✅ Normal Shift";
+function removeEntry(id){
+entries = entries.filter(e => e.id !== id);
+render();
 }
 
+function updateValue(id, field, value){
+let e = entries.find(x=>x.id===id);
+e[field]=value;
+save();
+calculate();
 }
 
-function resetForm(){
+function render(){
+let container = document.getElementById("entries");
+container.innerHTML="";
 
-document.getElementById("startTime").value="";
-document.getElementById("endTime").value="";
+entries.forEach(e=>{
+container.innerHTML += `
+<div class="card">
+<label>Start</label>
+<input type="time" value="${e.start}" 
+oninput="updateValue(${e.id},'start',this.value)">
 
-document.getElementById("result").innerHTML="0h 0m";
-document.getElementById("decimal").innerHTML="0.00 Hours";
-document.getElementById("overtime").innerHTML="Ready";
+<label>End</label>
+<input type="time" value="${e.end}" 
+oninput="updateValue(${e.id},'end',this.value)">
 
+<button class="removeBtn" onclick="removeEntry(${e.id})">
+Remove
+</button>
+</div>
+`;
+});
+
+save();
+calculate();
 }
 
-function setCurrentTime(){
+function calculate(){
 
-const now=new Date();
+let totalMinutes = 0;
 
-const hours=String(now.getHours()).padStart(2,'0');
-const mins=String(now.getMinutes()).padStart(2,'0');
+entries.forEach(e=>{
 
-document.getElementById("endTime").value=
-hours+":"+mins;
+if(!e.start || !e.end) return;
 
-calculateTime();
+let s = new Date("2025-01-01T"+e.start);
+let ed = new Date("2025-01-01T"+e.end);
 
+let diff = ed - s;
+if(diff<0) diff += 86400000;
+
+let mins = diff/60000;
+
+// snap if 15 min mode
+if(stepMode === 15){
+mins = Math.round(mins/15)*15;
 }
 
-// PC mouse-wheel time adjustment
-
-document.querySelectorAll('input[type="time"]').forEach(input=>{
-
-input.addEventListener('wheel',function(e){
-
-e.preventDefault();
-
-if(!this.value){
-this.value="06:00";
-}
-
-let [hours,minutes]=this.value.split(':').map(Number);
-
-if(e.deltaY<0){
-minutes+=15;
-}else{
-minutes-=15;
-}
-
-while(minutes>=60){
-minutes-=60;
-hours++;
-}
-
-while(minutes<0){
-minutes+=60;
-hours--;
-}
-
-if(hours>23) hours=0;
-if(hours<0) hours=23;
-
-this.value=
-String(hours).padStart(2,'0')+
-":"+
-String(minutes).padStart(2,'0');
-
-calculateTime();
+totalMinutes += mins;
 
 });
 
-});
+let hrs = Math.floor(totalMinutes/60);
+let rem = Math.round(totalMinutes%60);
 
+let decimal = totalMinutes/60;
+let quarter = Math.round(decimal*4)/4;
+
+document.getElementById("total").innerText =
+`${hrs}h ${rem}m`;
+
+document.getElementById("decimal").innerText =
+decimal.toFixed(2) + " Hours";
+
+document.getElementById("quarter").innerText =
+"Quarter: " + quarter.toFixed(2);
+
+// overtime tiers
+let status = document.getElementById("status");
+
+if(decimal >= 14){
+status.innerText="🚨 Critical Overtime";
+status.style.color="#ef4444";
+}else if(decimal >= 12){
+status.innerText="⚠ Heavy Shift";
+status.style.color="#fbbf24";
+}else{
+status.innerText="✅ Normal";
+status.style.color="#22c55e";
+}
+
+// bar (max 16 hrs scale)
+let pct = Math.min((decimal/16)*100,100);
+document.getElementById("barFill").style.width = pct+"%";
+
+}
+
+function save(){
+localStorage.setItem("runtimeEntries", JSON.stringify(entries));
+}
+
+function load(){
+let data = localStorage.getItem("runtimeEntries");
+if(data){
+entries = JSON.parse(data);
+}
+if(entries.length===0) addEntry();
+render();
+}
+
+load();
 </script>
 
 </body>
