@@ -65,6 +65,7 @@ cursor:pointer;
 .primary{background:#22c55e;color:black;}
 .secondary{background:#1f2937;color:white;}
 .danger{background:#ef4444;color:white;}
+.disabled{opacity:.4;cursor:not-allowed;}
 
 .mode{
 text-align:center;
@@ -148,8 +149,18 @@ entries.push({id:Date.now(),start:"",end:""});
 render();
 }
 
+// ✅ prevent deleting last block
 function removeEntry(id){
+if(entries.length === 1) return;
 entries = entries.filter(e=>e.id!==id);
+render();
+}
+
+// ✅ clear button
+function clearEntry(id){
+let e = entries.find(x=>x.id===id);
+e.start = "";
+e.end = "";
 render();
 }
 
@@ -160,16 +171,16 @@ save();
 calculate();
 }
 
-// ✅ SNAP BUTTON (your key feature)
+// ✅ SNAP (only used in 15 min mode)
 function snapEnd(id){
+if(stepMode !== 15) return;
+
 let e = entries.find(x=>x.id===id);
 if(!e.end) return;
 
 let [h,m] = e.end.split(":").map(Number);
-
 let total = h*60 + m;
 
-// snap to nearest 15
 total = Math.round(total / 15) * 15;
 
 let nh = Math.floor(total/60) % 24;
@@ -182,7 +193,6 @@ String(nm).padStart(2,'0');
 render();
 }
 
-// ✅ FIXED TIME CREATION (no more broken clock issue)
 function getMinutes(time){
 let [h,m] = time.split(":").map(Number);
 return h*60 + m;
@@ -201,7 +211,6 @@ let ed = getMinutes(e.end);
 let diff = ed - s;
 if(diff < 0) diff += 1440;
 
-// snap mode
 if(stepMode === 15){
 diff = Math.round(diff / 15) * 15;
 }
@@ -219,7 +228,6 @@ document.getElementById("total").innerText = `${h}h ${m}m`;
 document.getElementById("decimal").innerText = dec.toFixed(2)+" Hours";
 document.getElementById("quarter").innerText = "Quarter: "+q.toFixed(2);
 
-// status
 let s = document.getElementById("status");
 
 if(dec >= 14){
@@ -233,7 +241,6 @@ s.innerText="✅ Normal";
 s.style.color="#22c55e";
 }
 
-// progress bar
 let pct = Math.min((dec/16)*100,100);
 document.getElementById("fill").style.width = pct + "%";
 }
@@ -243,7 +250,10 @@ function render(){
 let c = document.getElementById("entries");
 c.innerHTML="";
 
-entries.forEach(e=>{
+entries.forEach((e, i)=>{
+
+let isLastBlock = entries.length === 1;
+let is15 = stepMode === 15;
 
 c.innerHTML += `
 <div class="card">
@@ -261,13 +271,24 @@ value="${e.end}"
 oninput="update(${e.id},'end',this.value)">
 
 <div class="row">
-<button class="secondary" onclick="snapEnd(${e.id})">
-Snap .25
+
+<button class="secondary"
+${!is15 ? 'disabled' : ''}
+onclick="snapEnd(${e.id})">
+${is15 ? 'Snap .25' : 'Exact'}
 </button>
 
-<button class="danger" onclick="removeEntry(${e.id})">
+<button class="secondary"
+onclick="clearEntry(${e.id})">
+Clear
+</button>
+
+<button class="danger ${isLastBlock ? 'disabled' : ''}"
+${isLastBlock ? 'disabled' : ''}
+onclick="removeEntry(${e.id})">
 Remove
 </button>
+
 </div>
 
 </div>
