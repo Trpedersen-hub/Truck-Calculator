@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Truck Runtime X Ultra</title>
+<title>Truck Runtime Pro</title>
+
+<meta name="theme-color" content="#020617">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
@@ -16,7 +18,7 @@ padding:15px;
 }
 
 .container{
-max-width:900px;
+max-width:700px;
 margin:auto;
 }
 
@@ -29,42 +31,66 @@ margin-bottom:10px;
 .card{
 background:#020617;
 border:1px solid #1f2937;
-border-radius:16px;
-padding:15px;
-margin-bottom:15px;
+border-radius:14px;
+padding:12px;
+margin-bottom:12px;
 }
+
+label{font-size:14px;opacity:.7;}
 
 input{
 width:100%;
-padding:12px;
+padding:10px;
 margin-top:5px;
 margin-bottom:10px;
-border-radius:10px;
-background:#020617;
+border-radius:8px;
 border:1px solid #1f2937;
+background:#020617;
 color:#4ade80;
 font-size:18px;
 text-align:center;
 }
 
+.row{display:flex;gap:8px;}
+
 button{
+flex:1;
 padding:10px;
 border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.primary{background:#22c55e;color:black;}
+.secondary{background:#1f2937;color:white;}
+.danger{background:#ef4444;color:white;}
+
+.mode{
+text-align:center;
+padding:8px;
+margin-bottom:10px;
+background:#1f2937;
 border-radius:10px;
 cursor:pointer;
-font-weight:bold;
 }
 
-.addBtn{background:#22c55e;color:black;width:100%;}
-.removeBtn{background:#ef4444;color:white;}
-
-.row{
-display:flex;
-gap:10px;
+.result{
+text-align:center;
+margin-top:15px;
 }
 
-.runtimeBar{
-height:10px;
+.big{
+font-size:42px;
+color:#4ade80;
+}
+
+.small{
+opacity:.75;
+}
+
+.bar{
+height:8px;
 background:#1f2937;
 border-radius:10px;
 overflow:hidden;
@@ -74,31 +100,8 @@ margin-top:10px;
 .fill{
 height:100%;
 background:#22c55e;
+width:0%;
 }
-
-.result{
-text-align:center;
-margin-top:15px;
-}
-
-.total{
-font-size:40px;
-color:#4ade80;
-}
-
-.small{
-opacity:.7;
-}
-
-.mode{
-text-align:center;
-margin-bottom:10px;
-cursor:pointer;
-padding:8px;
-background:#1f2937;
-border-radius:10px;
-}
-
 </style>
 </head>
 
@@ -106,80 +109,167 @@ border-radius:10px;
 
 <div class="container">
 
-<h1>🚛 Truck Runtime Ultra</h1>
+<h1>🚛 Truck Runtime</h1>
 
-<div class="mode" onclick="toggleMode()" id="modeBtn">
+<div id="modeBtn" class="mode" onclick="toggleMode()">
 15 MIN MODE
 </div>
 
 <div id="entries"></div>
 
-<button class="addBtn" onclick="addEntry()">+ Add Runtime Block</button>
+<button class="primary" onclick="addEntry()">+ Add Block</button>
 
 <div class="card result">
-<div class="total" id="total">0h 0m</div>
-
+<div class="big" id="total">0h 0m</div>
 <div class="small" id="decimal">0.00 Hours</div>
 <div class="small" id="quarter">Quarter: 0.00</div>
+<div class="small" id="status">Ready</div>
 
-<div id="status" class="small">Ready</div>
-
-<div class="runtimeBar">
-<div id="barFill" class="fill" style="width:0%"></div>
+<div class="bar">
+<div id="fill" class="fill"></div>
 </div>
-
 </div>
 
 </div>
 
 <script>
-let stepMode = 15; // minutes default
+let stepMode = 15;
 let entries = [];
 
 function toggleMode(){
 stepMode = stepMode === 15 ? 1 : 15;
 document.getElementById("modeBtn").innerText =
-stepMode===15 ? "15 MIN MODE" : "1 MIN MODE";
+stepMode === 15 ? "15 MIN MODE" : "1 MIN MODE";
+render();
 }
 
-function addEntry(start="", end=""){
-let id = Date.now();
-
-entries.push({id,start,end});
-
+function addEntry(){
+entries.push({id:Date.now(),start:"",end:""});
 render();
 }
 
 function removeEntry(id){
-entries = entries.filter(e => e.id !== id);
+entries = entries.filter(e=>e.id!==id);
 render();
 }
 
-function updateValue(id, field, value){
+function update(id, field, val){
 let e = entries.find(x=>x.id===id);
-e[field]=value;
+e[field]=val;
 save();
 calculate();
 }
 
-function render(){
-let container = document.getElementById("entries");
-container.innerHTML="";
+// ✅ SNAP BUTTON (your key feature)
+function snapEnd(id){
+let e = entries.find(x=>x.id===id);
+if(!e.end) return;
+
+let [h,m] = e.end.split(":").map(Number);
+
+let total = h*60 + m;
+
+// snap to nearest 15
+total = Math.round(total / 15) * 15;
+
+let nh = Math.floor(total/60) % 24;
+let nm = total % 60;
+
+e.end =
+String(nh).padStart(2,'0') + ":" +
+String(nm).padStart(2,'0');
+
+render();
+}
+
+// ✅ FIXED TIME CREATION (no more broken clock issue)
+function getMinutes(time){
+let [h,m] = time.split(":").map(Number);
+return h*60 + m;
+}
+
+function calculate(){
+
+let total = 0;
 
 entries.forEach(e=>{
-container.innerHTML += `
+if(!e.start || !e.end) return;
+
+let s = getMinutes(e.start);
+let ed = getMinutes(e.end);
+
+let diff = ed - s;
+if(diff < 0) diff += 1440;
+
+// snap mode
+if(stepMode === 15){
+diff = Math.round(diff / 15) * 15;
+}
+
+total += diff;
+});
+
+let h = Math.floor(total/60);
+let m = total % 60;
+
+let dec = total/60;
+let q = Math.round(dec*4)/4;
+
+document.getElementById("total").innerText = `${h}h ${m}m`;
+document.getElementById("decimal").innerText = dec.toFixed(2)+" Hours";
+document.getElementById("quarter").innerText = "Quarter: "+q.toFixed(2);
+
+// status
+let s = document.getElementById("status");
+
+if(dec >= 14){
+s.innerText="🚨 Critical Overtime";
+s.style.color="#ef4444";
+}else if(dec >= 12){
+s.innerText="⚠ Heavy Shift";
+s.style.color="#fbbf24";
+}else{
+s.innerText="✅ Normal";
+s.style.color="#22c55e";
+}
+
+// progress bar
+let pct = Math.min((dec/16)*100,100);
+document.getElementById("fill").style.width = pct + "%";
+}
+
+function render(){
+
+let c = document.getElementById("entries");
+c.innerHTML="";
+
+entries.forEach(e=>{
+
+c.innerHTML += `
 <div class="card">
+
 <label>Start</label>
-<input type="time" value="${e.start}" 
-oninput="updateValue(${e.id},'start',this.value)">
+<input type="time"
+step="${stepMode*60}"
+value="${e.start}"
+oninput="update(${e.id},'start',this.value)">
 
 <label>End</label>
-<input type="time" value="${e.end}" 
-oninput="updateValue(${e.id},'end',this.value)">
+<input type="time"
+step="${stepMode*60}"
+value="${e.end}"
+oninput="update(${e.id},'end',this.value)">
 
-<button class="removeBtn" onclick="removeEntry(${e.id})">
+<div class="row">
+<button class="secondary" onclick="snapEnd(${e.id})">
+Snap .25
+</button>
+
+<button class="danger" onclick="removeEntry(${e.id})">
 Remove
 </button>
+</div>
+
 </div>
 `;
 });
@@ -188,76 +278,16 @@ save();
 calculate();
 }
 
-function calculate(){
-
-let totalMinutes = 0;
-
-entries.forEach(e=>{
-
-if(!e.start || !e.end) return;
-
-let s = new Date("2025-01-01T"+e.start);
-let ed = new Date("2025-01-01T"+e.end);
-
-let diff = ed - s;
-if(diff<0) diff += 86400000;
-
-let mins = diff/60000;
-
-// snap if 15 min mode
-if(stepMode === 15){
-mins = Math.round(mins/15)*15;
-}
-
-totalMinutes += mins;
-
-});
-
-let hrs = Math.floor(totalMinutes/60);
-let rem = Math.round(totalMinutes%60);
-
-let decimal = totalMinutes/60;
-let quarter = Math.round(decimal*4)/4;
-
-document.getElementById("total").innerText =
-`${hrs}h ${rem}m`;
-
-document.getElementById("decimal").innerText =
-decimal.toFixed(2) + " Hours";
-
-document.getElementById("quarter").innerText =
-"Quarter: " + quarter.toFixed(2);
-
-// overtime tiers
-let status = document.getElementById("status");
-
-if(decimal >= 14){
-status.innerText="🚨 Critical Overtime";
-status.style.color="#ef4444";
-}else if(decimal >= 12){
-status.innerText="⚠ Heavy Shift";
-status.style.color="#fbbf24";
-}else{
-status.innerText="✅ Normal";
-status.style.color="#22c55e";
-}
-
-// bar (max 16 hrs scale)
-let pct = Math.min((decimal/16)*100,100);
-document.getElementById("barFill").style.width = pct+"%";
-
-}
-
 function save(){
-localStorage.setItem("runtimeEntries", JSON.stringify(entries));
+localStorage.setItem("runtime", JSON.stringify(entries));
 }
 
 function load(){
-let data = localStorage.getItem("runtimeEntries");
-if(data){
-entries = JSON.parse(data);
+let d = localStorage.getItem("runtime");
+if(d){
+entries = JSON.parse(d);
 }
-if(entries.length===0) addEntry();
+if(entries.length === 0) addEntry();
 render();
 }
 
