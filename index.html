@@ -14,11 +14,7 @@ h1{text-align:center;color:#4ade80;margin-bottom:10px;}
 .card{background:#020617;border:1px solid #1f2937;border-radius:14px;padding:12px;margin-bottom:12px;}
 label{font-size:14px;opacity:.7;}
 
-.timeRow{
-display:flex;
-gap:8px;
-align-items:center;
-}
+.timeRow{display:flex;gap:8px;align-items:center;}
 
 input{
 flex:1;
@@ -69,18 +65,8 @@ cursor:pointer;
 .big{font-size:42px;color:#4ade80;}
 .small{opacity:.75;}
 
-.bar{
-height:8px;
-background:#1f2937;
-border-radius:10px;
-overflow:hidden;
-margin-top:10px;
-}
-.fill{
-height:100%;
-background:#22c55e;
-width:0%;
-}
+.bar{height:8px;background:#1f2937;border-radius:10px;overflow:hidden;margin-top:10px;}
+.fill{height:100%;background:#22c55e;width:0%;}
 </style>
 </head>
 
@@ -138,7 +124,6 @@ function update(id, field, val){
 let e = entries.find(x=>x.id===id);
 e[field]=val;
 
-// ✅ enforce 15-min snapping automatically
 if(stepMode === 15 && val){
 e[field] = snapTo15(val);
 }
@@ -147,33 +132,40 @@ save();
 calculate();
 }
 
+// ✅ snap any time to nearest 15
 function snapTo15(time){
 let d = new Date("2025-01-01T"+time);
 let mins = Math.round(d.getMinutes()/15)*15;
 d.setMinutes(mins);
+
 return (
 String(d.getHours()).padStart(2,'0') + ":" +
 String(d.getMinutes()).padStart(2,'0')
 );
 }
 
+// ✅ NEW: REAL-TIME SNAP
 function snapEnd(id){
 if(stepMode !== 15) return;
 
-let e = entries.find(x=>x.id===id);
-if(!e.end) return;
+let now = new Date();
 
-e.end = snapTo15(e.end);
+let mins = Math.round(now.getMinutes()/15)*15;
+now.setMinutes(mins);
+
+let h = String(now.getHours()).padStart(2,'0');
+let m = String(now.getMinutes()).padStart(2,'0');
+
+let e = entries.find(x=>x.id===id);
+e.end = h + ":" + m;
+
 render();
 }
 
-// ✅ Open native picker (PC fix)
+// ✅ open picker
 function openPicker(el){
-if(el.showPicker){
-el.showPicker();
-}else{
-el.focus();
-}
+if(el.showPicker){ el.showPicker(); }
+else{ el.focus(); }
 }
 
 function calculate(){
