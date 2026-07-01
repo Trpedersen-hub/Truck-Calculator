@@ -71,6 +71,7 @@ cursor:pointer;
 </head>
 
 <body>
+
 <div class="container">
 
 <h1>🚛 Truck Runtime</h1>
@@ -132,29 +133,25 @@ save();
 calculate();
 }
 
+// normal rounding
 function snapTo15(time){
 let d = new Date("2025-01-01T"+time);
 let mins = Math.round(d.getMinutes()/15)*15;
 d.setMinutes(mins);
-
 return (
 String(d.getHours()).padStart(2,'0') + ":" +
 String(d.getMinutes()).padStart(2,'0')
 );
 }
 
-// ✅ FINAL: REAL-TIME BUTTON (works in BOTH modes)
+// ✅ REAL TIME BUTTON
 function snapEnd(id){
-
 let now = new Date();
 
-// IF 15 mode → round
 if(stepMode === 15){
 let mins = Math.round(now.getMinutes()/15)*15;
 now.setMinutes(mins);
 }
-
-// IF 1-minute mode → leave exact
 
 let h = String(now.getHours()).padStart(2,'0');
 let m = String(now.getMinutes()).padStart(2,'0');
@@ -165,11 +162,40 @@ e.end = h + ":" + m;
 render();
 }
 
-function openPicker(el){
-if(el.showPicker){ el.showPicker(); }
-else{ el.focus(); }
+// ✅ CUSTOM PICKER FOR 15-MIN MODE
+function openPicker(id, field){
+
+let input = document.getElementById(field + id);
+
+if(stepMode === 1){
+if(input.showPicker){ input.showPicker(); } 
+else input.focus();
+return;
 }
 
+// custom list (15-min only)
+let baseHour = new Date().getHours();
+let hour = Number(input.value?.split(":")[0] || baseHour);
+
+let options = ["00","15","30","45"];
+
+let choice = prompt(
+`Select minutes for ${String(hour).padStart(2,'0')}:00\n\n` +
+options.map(o=>`${hour}:${o}`).join("\n")
+);
+
+if(!choice) return;
+
+let parts = choice.split(":");
+
+input.value =
+String(parts[0]).padStart(2,'0') + ":" +
+String(parts[1]).padStart(2,'0');
+
+update(id, field, input.value);
+}
+
+// CALCULATION
 function calculate(){
 
 let totalMs = 0;
@@ -223,7 +249,6 @@ c.innerHTML="";
 entries.forEach(e=>{
 
 let isLast = entries.length===1;
-let is15 = stepMode===15;
 
 c.innerHTML+=`
 <div class="card">
@@ -231,30 +256,27 @@ c.innerHTML+=`
 <label>Start</label>
 <div class="timeRow">
 <input type="time"
-step="${stepMode*60}"
 value="${e.start}"
 id="start${e.id}"
 oninput="update(${e.id},'start',this.value)">
 <button class="clockBtn"
-onclick="openPicker(document.getElementById('start${e.id}'))">🕒</button>
+onclick="openPicker(${e.id},'start')">🕒</button>
 </div>
 
 <label>End</label>
 <div class="timeRow">
 <input type="time"
-step="${stepMode*60}"
 value="${e.end}"
 id="end${e.id}"
 oninput="update(${e.id},'end',this.value)">
 <button class="clockBtn"
-onclick="openPicker(document.getElementById('end${e.id}'))">🕒</button>
+onclick="openPicker(${e.id},'end')">🕒</button>
 </div>
 
 <div class="row">
-
 <button class="secondary"
 onclick="snapEnd(${e.id})">
-${is15?'Snap .25':'Exact'}
+${stepMode===15 ? 'Snap .25':'Exact'}
 </button>
 
 <button class="secondary"
@@ -263,11 +285,9 @@ onclick="clearEntry(${e.id})">Clear</button>
 <button class="danger ${isLast?'disabled':''}"
 ${isLast?'disabled':''}
 onclick="removeEntry(${e.id})">Remove</button>
-
 </div>
 
-</div>
-`;
+</div>`;
 });
 
 save();
