@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Truck Runtime Pro</title>
-<meta name="theme-color" content="#020617">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#020617;color:white;padding:15px;}
 .container{max-width:700px;margin:auto;}
+
 h1{text-align:center;color:#4ade80;margin-bottom:10px;}
+
 .card{background:#020617;border:1px solid #1f2937;border-radius:14px;padding:12px;margin-bottom:12px;}
+
 label{font-size:14px;opacity:.7;}
 
 .timeRow{display:flex;gap:8px;align-items:center;}
@@ -53,12 +55,8 @@ cursor:pointer;
 .disabled{opacity:.4;cursor:not-allowed;}
 
 .mode{
-text-align:center;
-padding:8px;
-margin-bottom:10px;
-background:#1f2937;
-border-radius:10px;
-cursor:pointer;
+text-align:center;padding:8px;margin-bottom:10px;
+background:#1f2937;border-radius:10px;cursor:pointer;
 }
 
 .result{text-align:center;margin-top:15px;}
@@ -67,13 +65,34 @@ cursor:pointer;
 
 .bar{height:8px;background:#1f2937;border-radius:10px;overflow:hidden;margin-top:10px;}
 .fill{height:100%;background:#22c55e;width:0%;}
+
+/* ✅ WHEEL MODAL */
+.modal{
+position:fixed;bottom:0;left:0;width:100%;
+background:#020617;border-top:2px solid #22c55e;
+padding:20px;display:none;
+}
+
+.picker{
+display:flex;justify-content:center;gap:20px;
+}
+
+select{
+height:150px;
+font-size:20px;
+background:#020617;color:white;
+border:1px solid #1f2937;
+}
+
+.modalBtns{
+display:flex;gap:10px;margin-top:15px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
 <h1>🚛 Truck Runtime</h1>
 
 <div id="modeBtn" class="mode" onclick="toggleMode()">15 MIN MODE</div>
@@ -87,20 +106,33 @@ cursor:pointer;
 <div class="small" id="decimal">0.00 Hours</div>
 <div class="small" id="quarter">Quarter: 0.00</div>
 <div class="small" id="status">Ready</div>
-
 <div class="bar"><div id="fill" class="fill"></div></div>
 </div>
+</div>
 
+<!-- ✅ WHEEL PICKER -->
+<div id="pickerModal" class="modal">
+<div class="picker">
+<select id="hours"></select>
+<select id="minutes"></select>
+</div>
+
+<div class="modalBtns">
+<button class="primary" onclick="applyTime()">✔ Set</button>
+<button class="danger" onclick="closePicker()">Cancel</button>
+</div>
 </div>
 
 <script>
 let stepMode = 15;
 let entries = [];
+let activeField = null;
+let activeId = null;
 
 function toggleMode(){
 stepMode = stepMode === 15 ? 1 : 15;
 document.getElementById("modeBtn").innerText =
-stepMode === 15 ? "15 MIN MODE" : "1 MIN MODE";
+stepMode===15 ? "15 MIN MODE" : "1 MIN MODE";
 render();
 }
 
@@ -110,135 +142,121 @@ render();
 }
 
 function removeEntry(id){
-if(entries.length === 1) return;
-entries = entries.filter(e=>e.id!==id);
+if(entries.length===1)return;
+entries=entries.filter(e=>e.id!==id);
 render();
 }
 
 function clearEntry(id){
-let e = entries.find(x=>x.id===id);
+let e=entries.find(x=>x.id===id);
 e.start=""; e.end="";
 render();
 }
 
 function update(id, field, val){
-let e = entries.find(x=>x.id===id);
+let e=entries.find(x=>x.id===id);
 e[field]=val;
-
-if(stepMode === 15 && val){
-e[field] = snapTo15(val);
+save();calculate();
 }
 
-save();
-calculate();
+// ✅ OPEN CUSTOM PICKER
+function openPicker(id, field){
+activeId=id;
+activeField=field;
+
+let hSel=document.getElementById("hours");
+let mSel=document.getElementById("minutes");
+
+hSel.innerHTML="";
+mSel.innerHTML="";
+
+// hours
+for(let i=0;i<24;i++){
+hSel.innerHTML+=`<option>${String(i).padStart(2,'0')}</option>`;
 }
 
-// normal rounding
-function snapTo15(time){
-let d = new Date("2025-01-01T"+time);
-let mins = Math.round(d.getMinutes()/15)*15;
-d.setMinutes(mins);
-return (
-String(d.getHours()).padStart(2,'0') + ":" +
-String(d.getMinutes()).padStart(2,'0')
-);
+// minutes
+if(stepMode===15){
+['00','15','30','45'].forEach(m=>{
+mSel.innerHTML+=`<option>${m}</option>`;
+});
+}else{
+for(let i=0;i<60;i++){
+mSel.innerHTML+=`<option>${String(i).padStart(2,'0')}</option>`;
+}
 }
 
-// ✅ REAL TIME BUTTON
+document.getElementById("pickerModal").style.display="block";
+}
+
+function closePicker(){
+document.getElementById("pickerModal").style.display="none";
+}
+
+function applyTime(){
+let h=document.getElementById("hours").value;
+let m=document.getElementById("minutes").value;
+
+let val=h+":"+m;
+
+let e=entries.find(x=>x.id===activeId);
+e[activeField]=val;
+
+closePicker();
+render();
+}
+
+// ✅ SNAP BUTTON
 function snapEnd(id){
-let now = new Date();
+let now=new Date();
 
-if(stepMode === 15){
-let mins = Math.round(now.getMinutes()/15)*15;
+if(stepMode===15){
+let mins=Math.round(now.getMinutes()/15)*15;
 now.setMinutes(mins);
 }
 
-let h = String(now.getHours()).padStart(2,'0');
-let m = String(now.getMinutes()).padStart(2,'0');
+let h=String(now.getHours()).padStart(2,'0');
+let m=String(now.getMinutes()).padStart(2,'0');
 
-let e = entries.find(x=>x.id===id);
-e.end = h + ":" + m;
+let e=entries.find(x=>x.id===id);
+e.end=h+":"+m;
 
 render();
 }
 
-// ✅ CUSTOM PICKER FOR 15-MIN MODE
-function openPicker(id, field){
-
-let input = document.getElementById(field + id);
-
-if(stepMode === 1){
-if(input.showPicker){ input.showPicker(); } 
-else input.focus();
-return;
-}
-
-// custom list (15-min only)
-let baseHour = new Date().getHours();
-let hour = Number(input.value?.split(":")[0] || baseHour);
-
-let options = ["00","15","30","45"];
-
-let choice = prompt(
-`Select minutes for ${String(hour).padStart(2,'0')}:00\n\n` +
-options.map(o=>`${hour}:${o}`).join("\n")
-);
-
-if(!choice) return;
-
-let parts = choice.split(":");
-
-input.value =
-String(parts[0]).padStart(2,'0') + ":" +
-String(parts[1]).padStart(2,'0');
-
-update(id, field, input.value);
-}
-
-// CALCULATION
 function calculate(){
 
-let totalMs = 0;
+let totalMs=0;
 
 entries.forEach(e=>{
-if(!e.start || !e.end) return;
+if(!e.start||!e.end)return;
 
-let s = new Date("2025-01-01T"+e.start);
-let eD = new Date("2025-01-01T"+e.end);
+let s=new Date("2025-01-01T"+e.start);
+let ed=new Date("2025-01-01T"+e.end);
 
-let diff = eD - s;
-if(diff < 0) diff += 86400000;
+let diff=ed-s;
+if(diff<0) diff+=86400000;
 
-if(stepMode === 15){
-let mins = diff/60000;
-mins = Math.round(mins/15)*15;
-diff = mins*60000;
+if(stepMode===15){
+let mins=diff/60000;
+mins=Math.round(mins/15)*15;
+diff=mins*60000;
 }
 
-totalMs += diff;
+totalMs+=diff;
 });
 
-let h = Math.floor(totalMs / 3600000);
-let m = Math.floor((totalMs % 3600000)/60000);
+let h=Math.floor(totalMs/3600000);
+let m=Math.floor((totalMs%3600000)/60000);
 
-let dec = totalMs / 3600000;
-let q = Math.round(dec*4)/4;
+let dec=totalMs/3600000;
+let q=Math.round(dec*4)/4;
 
-document.getElementById("total").innerText = `${h}h ${m}m`;
-document.getElementById("decimal").innerText = dec.toFixed(2)+" Hours";
-document.getElementById("quarter").innerText = "Quarter: "+q.toFixed(2);
+document.getElementById("total").innerText=`${h}h ${m}m`;
+document.getElementById("decimal").innerText=dec.toFixed(2)+" Hours";
+document.getElementById("quarter").innerText="Quarter: "+q.toFixed(2);
 
-let s = document.getElementById("status");
-
-if(dec>=14){
-s.innerText="🚨 Critical Overtime"; s.style.color="#ef4444";
-}else if(dec>=12){
-s.innerText="⚠ Heavy Shift"; s.style.color="#fbbf24";
-}else{
-s.innerText="✅ Normal"; s.style.color="#22c55e";
-}
-
-document.getElementById("fill").style.width =
+document.getElementById("fill").style.width=
 Math.min((dec/16)*100,100)+"%";
 }
 
@@ -248,27 +266,21 @@ c.innerHTML="";
 
 entries.forEach(e=>{
 
-let isLast = entries.length===1;
+let isLast=entries.length===1;
 
 c.innerHTML+=`
 <div class="card">
 
 <label>Start</label>
 <div class="timeRow">
-<input type="time"
-value="${e.start}"
-id="start${e.id}"
-oninput="update(${e.id},'start',this.value)">
+<input value="${e.start}" readonly>
 <button class="clockBtn"
 onclick="openPicker(${e.id},'start')">🕒</button>
 </div>
 
 <label>End</label>
 <div class="timeRow">
-<input type="time"
-value="${e.end}"
-id="end${e.id}"
-oninput="update(${e.id},'end',this.value)">
+<input value="${e.end}" readonly>
 <button class="clockBtn"
 onclick="openPicker(${e.id},'end')">🕒</button>
 </div>
@@ -276,7 +288,7 @@ onclick="openPicker(${e.id},'end')">🕒</button>
 <div class="row">
 <button class="secondary"
 onclick="snapEnd(${e.id})">
-${stepMode===15 ? 'Snap .25':'Exact'}
+${stepMode===15?'Snap .25':'Exact'}
 </button>
 
 <button class="secondary"
@@ -299,8 +311,8 @@ localStorage.setItem("runtime", JSON.stringify(entries));
 }
 
 function load(){
-let d = localStorage.getItem("runtime");
-if(d){ entries=JSON.parse(d); }
+let d=localStorage.getItem("runtime");
+if(d) entries=JSON.parse(d);
 if(entries.length===0) addEntry();
 render();
 }
