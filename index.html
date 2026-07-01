@@ -132,7 +132,6 @@ save();
 calculate();
 }
 
-// ✅ snap any time to nearest 15
 function snapTo15(time){
 let d = new Date("2025-01-01T"+time);
 let mins = Math.round(d.getMinutes()/15)*15;
@@ -144,14 +143,18 @@ String(d.getMinutes()).padStart(2,'0')
 );
 }
 
-// ✅ NEW: REAL-TIME SNAP
+// ✅ FINAL: REAL-TIME BUTTON (works in BOTH modes)
 function snapEnd(id){
-if(stepMode !== 15) return;
 
 let now = new Date();
 
+// IF 15 mode → round
+if(stepMode === 15){
 let mins = Math.round(now.getMinutes()/15)*15;
 now.setMinutes(mins);
+}
+
+// IF 1-minute mode → leave exact
 
 let h = String(now.getHours()).padStart(2,'0');
 let m = String(now.getMinutes()).padStart(2,'0');
@@ -162,7 +165,6 @@ e.end = h + ":" + m;
 render();
 }
 
-// ✅ open picker
 function openPicker(el){
 if(el.showPicker){ el.showPicker(); }
 else{ el.focus(); }
@@ -251,7 +253,6 @@ onclick="openPicker(document.getElementById('end${e.id}'))">🕒</button>
 <div class="row">
 
 <button class="secondary"
-${!is15?'disabled':''}
 onclick="snapEnd(${e.id})">
 ${is15?'Snap .25':'Exact'}
 </button>
