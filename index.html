@@ -13,19 +13,74 @@ body{background:#020617;color:white;padding:15px;}
 h1{text-align:center;color:#4ade80;margin-bottom:10px;}
 .card{background:#020617;border:1px solid #1f2937;border-radius:14px;padding:12px;margin-bottom:12px;}
 label{font-size:14px;opacity:.7;}
-input{width:100%;padding:10px;margin-top:5px;margin-bottom:10px;border-radius:8px;border:1px solid #1f2937;background:#020617;color:#4ade80;font-size:18px;text-align:center;}
-.row{display:flex;gap:8px;}
-button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;}
+
+.timeRow{
+display:flex;
+gap:8px;
+align-items:center;
+}
+
+input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:1px solid #1f2937;
+background:#020617;
+color:#4ade80;
+font-size:18px;
+text-align:center;
+}
+
+.clockBtn{
+width:50px;
+background:#1f2937;
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+}
+
+.row{display:flex;gap:8px;margin-top:8px;}
+
+button{
+flex:1;
+padding:10px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
 .primary{background:#22c55e;color:black;}
 .secondary{background:#1f2937;color:white;}
 .danger{background:#ef4444;color:white;}
 .disabled{opacity:.4;cursor:not-allowed;}
-.mode{text-align:center;padding:8px;margin-bottom:10px;background:#1f2937;border-radius:10px;cursor:pointer;}
+
+.mode{
+text-align:center;
+padding:8px;
+margin-bottom:10px;
+background:#1f2937;
+border-radius:10px;
+cursor:pointer;
+}
+
 .result{text-align:center;margin-top:15px;}
 .big{font-size:42px;color:#4ade80;}
 .small{opacity:.75;}
-.bar{height:8px;background:#1f2937;border-radius:10px;overflow:hidden;margin-top:10px;}
-.fill{height:100%;background:#22c55e;width:0%;}
+
+.bar{
+height:8px;
+background:#1f2937;
+border-radius:10px;
+overflow:hidden;
+margin-top:10px;
+}
+.fill{
+height:100%;
+background:#22c55e;
+width:0%;
+}
 </style>
 </head>
 
@@ -75,40 +130,52 @@ render();
 
 function clearEntry(id){
 let e = entries.find(x=>x.id===id);
-e.start = "";
-e.end = "";
+e.start=""; e.end="";
 render();
 }
 
 function update(id, field, val){
 let e = entries.find(x=>x.id===id);
 e[field]=val;
+
+// ✅ enforce 15-min snapping automatically
+if(stepMode === 15 && val){
+e[field] = snapTo15(val);
+}
+
 save();
 calculate();
 }
 
-// SNAP END (uses Date logic)
+function snapTo15(time){
+let d = new Date("2025-01-01T"+time);
+let mins = Math.round(d.getMinutes()/15)*15;
+d.setMinutes(mins);
+return (
+String(d.getHours()).padStart(2,'0') + ":" +
+String(d.getMinutes()).padStart(2,'0')
+);
+}
+
 function snapEnd(id){
 if(stepMode !== 15) return;
 
 let e = entries.find(x=>x.id===id);
 if(!e.end) return;
 
-let d = new Date("2025-01-01T"+e.end);
-
-// round to nearest 15 minutes
-let mins = Math.round(d.getMinutes() / 15) * 15;
-d.setMinutes(mins);
-
-let h = String(d.getHours()).padStart(2,'0');
-let m = String(d.getMinutes()).padStart(2,'0');
-
-e.end = h + ":" + m;
-
+e.end = snapTo15(e.end);
 render();
 }
 
-// ✅ FINAL FIXED CALCULATION (stable + accurate)
+// ✅ Open native picker (PC fix)
+function openPicker(el){
+if(el.showPicker){
+el.showPicker();
+}else{
+el.focus();
+}
+}
+
 function calculate(){
 
 let totalMs = 0;
@@ -116,101 +183,93 @@ let totalMs = 0;
 entries.forEach(e=>{
 if(!e.start || !e.end) return;
 
-let startDate = new Date("2025-01-01T"+e.start);
-let endDate = new Date("2025-01-01T"+e.end);
+let s = new Date("2025-01-01T"+e.start);
+let eD = new Date("2025-01-01T"+e.end);
 
-let diff = endDate - startDate;
+let diff = eD - s;
+if(diff < 0) diff += 86400000;
 
-if(diff < 0){
-diff += 24*60*60*1000;
-}
-
-// snap AFTER diff (correct method)
 if(stepMode === 15){
-let mins = diff / 60000;
-mins = Math.round(mins / 15) * 15;
-diff = mins * 60000;
+let mins = diff/60000;
+mins = Math.round(mins/15)*15;
+diff = mins*60000;
 }
 
 totalMs += diff;
 });
 
-let hours = Math.floor(totalMs / (1000*60*60));
-let minutes = Math.floor((totalMs % (1000*60*60)) / 60000);
+let h = Math.floor(totalMs / 3600000);
+let m = Math.floor((totalMs % 3600000)/60000);
 
-let decimal = totalMs / (1000*60*60);
-let quarter = Math.round(decimal*4)/4;
+let dec = totalMs / 3600000;
+let q = Math.round(dec*4)/4;
 
-// ✅ prevents rounding glitches (like 59 showing wrong)
-if(minutes === 60){
-hours += 1;
-minutes = 0;
-}
-
-document.getElementById("total").innerText = `${hours}h ${minutes}m`;
-document.getElementById("decimal").innerText = decimal.toFixed(2)+" Hours";
-document.getElementById("quarter").innerText = "Quarter: "+quarter.toFixed(2);
+document.getElementById("total").innerText = `${h}h ${m}m`;
+document.getElementById("decimal").innerText = dec.toFixed(2)+" Hours";
+document.getElementById("quarter").innerText = "Quarter: "+q.toFixed(2);
 
 let s = document.getElementById("status");
 
-if(decimal >= 14){
-s.innerText="🚨 Critical Overtime";
-s.style.color="#ef4444";
-}else if(decimal >= 12){
-s.innerText="⚠ Heavy Shift";
-s.style.color="#fbbf24";
+if(dec>=14){
+s.innerText="🚨 Critical Overtime"; s.style.color="#ef4444";
+}else if(dec>=12){
+s.innerText="⚠ Heavy Shift"; s.style.color="#fbbf24";
 }else{
-s.innerText="✅ Normal";
-s.style.color="#22c55e";
+s.innerText="✅ Normal"; s.style.color="#22c55e";
 }
 
-let pct = Math.min((decimal/16)*100,100);
-document.getElementById("fill").style.width = pct+"%";
+document.getElementById("fill").style.width =
+Math.min((dec/16)*100,100)+"%";
 }
 
 function render(){
-
-let c = document.getElementById("entries");
+let c=document.getElementById("entries");
 c.innerHTML="";
 
 entries.forEach(e=>{
 
-let isLast = entries.length === 1;
-let is15 = stepMode === 15;
+let isLast = entries.length===1;
+let is15 = stepMode===15;
 
-c.innerHTML += `
+c.innerHTML+=`
 <div class="card">
 
 <label>Start</label>
+<div class="timeRow">
 <input type="time"
 step="${stepMode*60}"
 value="${e.start}"
+id="start${e.id}"
 oninput="update(${e.id},'start',this.value)">
+<button class="clockBtn"
+onclick="openPicker(document.getElementById('start${e.id}'))">🕒</button>
+</div>
 
 <label>End</label>
+<div class="timeRow">
 <input type="time"
 step="${stepMode*60}"
 value="${e.end}"
+id="end${e.id}"
 oninput="update(${e.id},'end',this.value)">
+<button class="clockBtn"
+onclick="openPicker(document.getElementById('end${e.id}'))">🕒</button>
+</div>
 
 <div class="row">
 
 <button class="secondary"
-${!is15 ? 'disabled' : ''}
+${!is15?'disabled':''}
 onclick="snapEnd(${e.id})">
-${is15 ? 'Snap .25' : 'Exact'}
+${is15?'Snap .25':'Exact'}
 </button>
 
 <button class="secondary"
-onclick="clearEntry(${e.id})">
-Clear
-</button>
+onclick="clearEntry(${e.id})">Clear</button>
 
-<button class="danger ${isLast ? 'disabled' : ''}"
-${isLast ? 'disabled' : ''}
-onclick="removeEntry(${e.id})">
-Remove
-</button>
+<button class="danger ${isLast?'disabled':''}"
+${isLast?'disabled':''}
+onclick="removeEntry(${e.id})">Remove</button>
 
 </div>
 
@@ -228,10 +287,8 @@ localStorage.setItem("runtime", JSON.stringify(entries));
 
 function load(){
 let d = localStorage.getItem("runtime");
-if(d){
-entries = JSON.parse(d);
-}
-if(entries.length === 0) addEntry();
+if(d){ entries=JSON.parse(d); }
+if(entries.length===0) addEntry();
 render();
 }
 
