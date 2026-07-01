@@ -3,118 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Truck Runtime Pro</title>
-
 <meta name="theme-color" content="#020617">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-
-body{
-background:#020617;
-color:white;
-padding:15px;
-}
-
-.container{
-max-width:700px;
-margin:auto;
-}
-
-h1{
-text-align:center;
-color:#4ade80;
-margin-bottom:10px;
-}
-
-.card{
-background:#020617;
-border:1px solid #1f2937;
-border-radius:14px;
-padding:12px;
-margin-bottom:12px;
-}
-
+body{background:#020617;color:white;padding:15px;}
+.container{max-width:700px;margin:auto;}
+h1{text-align:center;color:#4ade80;margin-bottom:10px;}
+.card{background:#020617;border:1px solid #1f2937;border-radius:14px;padding:12px;margin-bottom:12px;}
 label{font-size:14px;opacity:.7;}
-
-input{
-width:100%;
-padding:10px;
-margin-top:5px;
-margin-bottom:10px;
-border-radius:8px;
-border:1px solid #1f2937;
-background:#020617;
-color:#4ade80;
-font-size:18px;
-text-align:center;
-}
-
+input{width:100%;padding:10px;margin-top:5px;margin-bottom:10px;border-radius:8px;border:1px solid #1f2937;background:#020617;color:#4ade80;font-size:18px;text-align:center;}
 .row{display:flex;gap:8px;}
-
-button{
-flex:1;
-padding:10px;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-}
-
+button{flex:1;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;}
 .primary{background:#22c55e;color:black;}
 .secondary{background:#1f2937;color:white;}
 .danger{background:#ef4444;color:white;}
 .disabled{opacity:.4;cursor:not-allowed;}
-
-.mode{
-text-align:center;
-padding:8px;
-margin-bottom:10px;
-background:#1f2937;
-border-radius:10px;
-cursor:pointer;
-}
-
-.result{
-text-align:center;
-margin-top:15px;
-}
-
-.big{
-font-size:42px;
-color:#4ade80;
-}
-
-.small{
-opacity:.75;
-}
-
-.bar{
-height:8px;
-background:#1f2937;
-border-radius:10px;
-overflow:hidden;
-margin-top:10px;
-}
-
-.fill{
-height:100%;
-background:#22c55e;
-width:0%;
-}
+.mode{text-align:center;padding:8px;margin-bottom:10px;background:#1f2937;border-radius:10px;cursor:pointer;}
+.result{text-align:center;margin-top:15px;}
+.big{font-size:42px;color:#4ade80;}
+.small{opacity:.75;}
+.bar{height:8px;background:#1f2937;border-radius:10px;overflow:hidden;margin-top:10px;}
+.fill{height:100%;background:#22c55e;width:0%;}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <h1>🚛 Truck Runtime</h1>
 
-<div id="modeBtn" class="mode" onclick="toggleMode()">
-15 MIN MODE
-</div>
+<div id="modeBtn" class="mode" onclick="toggleMode()">15 MIN MODE</div>
 
 <div id="entries"></div>
 
@@ -126,9 +46,7 @@ width:0%;
 <div class="small" id="quarter">Quarter: 0.00</div>
 <div class="small" id="status">Ready</div>
 
-<div class="bar">
-<div id="fill" class="fill"></div>
-</div>
+<div class="bar"><div id="fill" class="fill"></div></div>
 </div>
 
 </div>
@@ -149,14 +67,12 @@ entries.push({id:Date.now(),start:"",end:""});
 render();
 }
 
-// ✅ prevent deleting last block
 function removeEntry(id){
 if(entries.length === 1) return;
 entries = entries.filter(e=>e.id!==id);
 render();
 }
 
-// ✅ clear button
 function clearEntry(id){
 let e = entries.find(x=>x.id===id);
 e.start = "";
@@ -171,69 +87,76 @@ save();
 calculate();
 }
 
-// ✅ SNAP (only used in 15 min mode)
+// SNAP END (uses Date logic)
 function snapEnd(id){
 if(stepMode !== 15) return;
 
 let e = entries.find(x=>x.id===id);
 if(!e.end) return;
 
-let [h,m] = e.end.split(":").map(Number);
-let total = h*60 + m;
+let d = new Date("2025-01-01T"+e.end);
 
-total = Math.round(total / 15) * 15;
+// round to nearest 15 minutes
+let mins = Math.round(d.getMinutes() / 15) * 15;
+d.setMinutes(mins);
 
-let nh = Math.floor(total/60) % 24;
-let nm = total % 60;
+let h = String(d.getHours()).padStart(2,'0');
+let m = String(d.getMinutes()).padStart(2,'0');
 
-e.end =
-String(nh).padStart(2,'0') + ":" +
-String(nm).padStart(2,'0');
+e.end = h + ":" + m;
 
 render();
 }
 
-function getMinutes(time){
-let [h,m] = time.split(":").map(Number);
-return h*60 + m;
-}
-
+// ✅ FINAL FIXED CALCULATION (stable + accurate)
 function calculate(){
 
-let total = 0;
+let totalMs = 0;
 
 entries.forEach(e=>{
 if(!e.start || !e.end) return;
 
-let s = getMinutes(e.start);
-let ed = getMinutes(e.end);
+let startDate = new Date("2025-01-01T"+e.start);
+let endDate = new Date("2025-01-01T"+e.end);
 
-let diff = ed - s;
-if(diff < 0) diff += 1440;
+let diff = endDate - startDate;
 
-if(stepMode === 15){
-diff = Math.round(diff / 15) * 15;
+if(diff < 0){
+diff += 24*60*60*1000;
 }
 
-total += diff;
+// snap AFTER diff (correct method)
+if(stepMode === 15){
+let mins = diff / 60000;
+mins = Math.round(mins / 15) * 15;
+diff = mins * 60000;
+}
+
+totalMs += diff;
 });
 
-let h = Math.floor(total/60);
-let m = total % 60;
+let hours = Math.floor(totalMs / (1000*60*60));
+let minutes = Math.floor((totalMs % (1000*60*60)) / 60000);
 
-let dec = total/60;
-let q = Math.round(dec*4)/4;
+let decimal = totalMs / (1000*60*60);
+let quarter = Math.round(decimal*4)/4;
 
-document.getElementById("total").innerText = `${h}h ${m}m`;
-document.getElementById("decimal").innerText = dec.toFixed(2)+" Hours";
-document.getElementById("quarter").innerText = "Quarter: "+q.toFixed(2);
+// ✅ prevents rounding glitches (like 59 showing wrong)
+if(minutes === 60){
+hours += 1;
+minutes = 0;
+}
+
+document.getElementById("total").innerText = `${hours}h ${minutes}m`;
+document.getElementById("decimal").innerText = decimal.toFixed(2)+" Hours";
+document.getElementById("quarter").innerText = "Quarter: "+quarter.toFixed(2);
 
 let s = document.getElementById("status");
 
-if(dec >= 14){
+if(decimal >= 14){
 s.innerText="🚨 Critical Overtime";
 s.style.color="#ef4444";
-}else if(dec >= 12){
+}else if(decimal >= 12){
 s.innerText="⚠ Heavy Shift";
 s.style.color="#fbbf24";
 }else{
@@ -241,8 +164,8 @@ s.innerText="✅ Normal";
 s.style.color="#22c55e";
 }
 
-let pct = Math.min((dec/16)*100,100);
-document.getElementById("fill").style.width = pct + "%";
+let pct = Math.min((decimal/16)*100,100);
+document.getElementById("fill").style.width = pct+"%";
 }
 
 function render(){
@@ -250,9 +173,9 @@ function render(){
 let c = document.getElementById("entries");
 c.innerHTML="";
 
-entries.forEach((e, i)=>{
+entries.forEach(e=>{
 
-let isLastBlock = entries.length === 1;
+let isLast = entries.length === 1;
 let is15 = stepMode === 15;
 
 c.innerHTML += `
@@ -283,8 +206,8 @@ onclick="clearEntry(${e.id})">
 Clear
 </button>
 
-<button class="danger ${isLastBlock ? 'disabled' : ''}"
-${isLastBlock ? 'disabled' : ''}
+<button class="danger ${isLast ? 'disabled' : ''}"
+${isLast ? 'disabled' : ''}
 onclick="removeEntry(${e.id})">
 Remove
 </button>
