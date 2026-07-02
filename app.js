@@ -1,193 +1,549 @@
 let entries = [];
-
 let stepMode = 15;
 
-function vibrate(){
+let pickerId = null;
+let pickerField = null;
 
-if(navigator.vibrate){
+let pickerHour = 0;
+let pickerMinute = 0;
 
-navigator.vibrate(10);
+function vibrate() {
 
-}
-
-}
-
-function toggleMode(){
-
-vibrate();
-
-stepMode =
-stepMode === 15 ? 1 : 15;
-
-document.getElementById("modeBtn").innerText =
-stepMode === 15
-? "15 MIN MODE"
-: "1 MIN MODE";
-
-render();
+    if (navigator.vibrate) {
+        navigator.vibrate(10);
+    }
 
 }
 
-function addEntry(){
+function toggleMode() {
 
-vibrate();
+    vibrate();
 
-const previous =
-entries[entries.length-1];
+    stepMode = stepMode === 15 ? 1 : 15;
 
-entries.push({
+    document.getElementById("modeBtn").innerText =
+        stepMode === 15
+            ? "15 MIN MODE"
+            : "1 MIN MODE";
 
-id:Date.now()+Math.random(),
-
-start:previous?.end || "",
-
-end:""
-
-});
-
-save();
-
-render();
+    render();
 
 }
 
-function removeEntry(id){
+function addEntry() {
 
-if(entries.length===1)
-return;
+    vibrate();
 
-vibrate();
+    let previous =
+        entries[entries.length - 1];
 
-entries =
-entries.filter(e=>e.id!==id);
+    entries.push({
 
-save();
+        id: Date.now() + Math.random(),
 
-render();
+        start: previous?.end || "",
 
-}
+        end: ""
 
-function clearEntry(id){
+    });
 
-const e =
-entries.find(x=>x.id===id);
-
-e.start="";
-e.end="";
-
-save();
-
-render();
+    save();
+    render();
 
 }
 
-function formatRuntime(ms){
+function removeEntry(id) {
 
-const h =
-Math.floor(ms/3600000);
+    if (entries.length === 1) return;
 
-const m =
-Math.floor(
-(ms%3600000)/60000
-);
+    vibrate();
 
-return `${h}h ${m}m`;
+    entries =
+        entries.filter(e => e.id != id);
 
-}
-
-function getDuration(start,end){
-
-if(!start || !end)
-return 0;
-
-let s =
-new Date("2025-01-01T"+start);
-
-let e =
-new Date("2025-01-01T"+end);
-
-let diff = e - s;
-
-if(diff < 0)
-diff += 86400000;
-
-if(stepMode===15){
-
-let mins =
-Math.round(
-(diff/60000)/15
-)*15;
-
-diff =
-mins*60000;
+    save();
+    render();
 
 }
 
-return diff;
+function clearEntry(id) {
+
+    vibrate();
+
+    let e =
+        entries.find(x => x.id == id);
+
+    if (!e) return;
+
+    e.start = "";
+    e.end = "";
+
+    save();
+    render();
 
 }
 
-function calculate(){
+function formatRuntime(ms) {
 
-let total=0;
+    let h =
+        Math.floor(ms / 3600000);
 
-entries.forEach(entry=>{
+    let m =
+        Math.floor(
+            (ms % 3600000) / 60000
+        );
 
-total +=
-getDuration(
-entry.start,
-entry.end
-);
-
-});
-
-const hours =
-Math.floor(total/3600000);
-
-const minutes =
-Math.floor(
-(total%3600000)/60000
-);
-
-const decimal =
-total/3600000;
-
-const quarter =
-Math.round(decimal*4)/4;
-
-document.getElementById("total").innerText =
-`${hours}h ${minutes}m`;
-
-document.getElementById("decimal").innerText =
-`${decimal.toFixed(2)} Hours`;
-
-document.getElementById("quarter").innerText =
-`Quarter: ${quarter.toFixed(2)}`;
-
-document.getElementById("fill").style.width =
-Math.min(
-(decimal/16)*100,
-100
-)+"%";
+    return `${h}h ${m}m`;
 
 }
 
-function render(){
+function getDuration(start, end) {
 
-const container =
-document.getElementById("entries");
+    if (!start || !end) return 0;
 
-container.innerHTML="";
+    let s =
+        new Date("2025-01-01T" + start);
 
-entries.forEach(entry=>{
+    let e =
+        new Date("2025-01-01T" + end);
 
-let runtime =
-getDuration(
-entry.start,
-entry.end
-);
+    let diff = e - s;
 
-container.innerHTML += `
+    if (diff < 0)
+        diff += 86400000;
+
+    if (stepMode === 15) {
+
+        let mins =
+            Math.round(
+                (diff / 60000) / 15
+            ) * 15;
+
+        diff =
+            mins * 60000;
+
+    }
+
+    return diff;
+
+}
+
+function calculate() {
+
+    let total = 0;
+
+    entries.forEach(entry => {
+
+        total +=
+            getDuration(
+                entry.start,
+                entry.end
+            );
+
+    });
+
+    let hours =
+        Math.floor(total / 3600000);
+
+    let minutes =
+        Math.floor(
+            (total % 3600000) / 60000
+        );
+
+    let decimal =
+        total / 3600000;
+
+    let quarter =
+        Math.round(decimal * 4) / 4;
+
+    document.getElementById("total").innerText =
+        `${hours}h ${minutes}m`;
+
+    document.getElementById("decimal").innerText =
+        `${decimal.toFixed(2)} Hours`;
+
+    document.getElementById("quarter").innerText =
+        `Quarter: ${quarter.toFixed(2)}`;
+
+    document.getElementById("fill").style.width =
+        Math.min(
+            (decimal / 16) * 100,
+            100
+        ) + "%";
+
+    let status =
+        document.getElementById("status");
+
+    if (decimal < 8) {
+
+        status.innerText =
+            "Normal Shift";
+
+        status.className =
+            "statusNormal";
+
+    }
+    else if (decimal < 12) {
+
+        status.innerText =
+            "Extended Shift";
+
+        status.className =
+            "statusExtended";
+
+    }
+    else {
+
+        status.innerText =
+            "Long Day";
+
+        status.className =
+            "statusLong";
+
+    }
+
+}
+
+function currentTime() {
+
+    let now = new Date();
+
+    if (stepMode === 15) {
+
+        let mins =
+            Math.round(
+                now.getMinutes() / 15
+            ) * 15;
+
+        if (mins === 60) {
+
+            now.setHours(
+                now.getHours() + 1
+            );
+
+            mins = 0;
+
+        }
+
+        now.setMinutes(
+            mins,
+            0,
+            0
+        );
+
+    }
+
+    return (
+        String(now.getHours())
+            .padStart(2, "0")
+        +
+        ":"
+        +
+        String(now.getMinutes())
+            .padStart(2, "0")
+    );
+
+}
+
+function startNow(id) {
+
+    vibrate();
+
+    let e =
+        entries.find(x => x.id == id);
+
+    e.start =
+        currentTime();
+
+    save();
+    render();
+
+}
+
+function endNow(id) {
+
+    vibrate();
+
+    let e =
+        entries.find(x => x.id == id);
+
+    e.end =
+        currentTime();
+
+    save();
+    render();
+
+}
+
+/* ===========================
+   IOS WHEEL PICKER
+=========================== */
+
+function openTimePicker(id, field) {
+
+    pickerId = id;
+    pickerField = field;
+
+    let entry =
+        entries.find(
+            x => x.id == id
+        );
+
+    let value =
+        entry[field] || "08:00";
+
+    let parts =
+        value.split(":");
+
+    pickerHour =
+        parseInt(parts[0]);
+
+    pickerMinute =
+        parseInt(parts[1]);
+
+    buildWheel();
+
+    document
+        .getElementById("pickerOverlay")
+        .style.display = "flex";
+
+    vibrate();
+
+}
+
+function buildWheel() {
+
+    const hourWheel =
+        document.getElementById("hourWheel");
+
+    const minuteWheel =
+        document.getElementById("minuteWheel");
+
+    hourWheel.innerHTML = "";
+    minuteWheel.innerHTML = "";
+
+    for (let h = 0; h < 24; h++) {
+
+        hourWheel.innerHTML +=
+            `<div class="wheelItem">${String(h).padStart(2, "0")}</div>`;
+
+    }
+
+    if (stepMode === 15) {
+
+        [0, 15, 30, 45]
+            .forEach(m => {
+
+                minuteWheel.innerHTML +=
+                    `<div class="wheelItem">${String(m).padStart(2, "0")}</div>`;
+
+            });
+
+    }
+    else {
+
+        for (let m = 0; m < 60; m++) {
+
+            minuteWheel.innerHTML +=
+                `<div class="wheelItem">${String(m).padStart(2, "0")}</div>`;
+
+        }
+
+    }
+
+    setTimeout(() => {
+
+        hourWheel.scrollTop =
+            pickerHour * 60;
+
+        minuteWheel.scrollTop =
+            (
+                stepMode === 15
+                    ? [0, 15, 30, 45].indexOf(pickerMinute)
+                    : pickerMinute
+            ) * 60;
+
+        highlightActive();
+
+    }, 60);
+
+    hourWheel.onscroll =
+        updateWheelSelection;
+
+    minuteWheel.onscroll =
+        updateWheelSelection;
+
+}
+
+function updateWheelSelection() {
+
+    const hourWheel =
+        document.getElementById("hourWheel");
+
+    const minuteWheel =
+        document.getElementById("minuteWheel");
+
+    pickerHour =
+        Math.max(
+            0,
+            Math.min(
+                23,
+                Math.round(
+                    hourWheel.scrollTop / 60
+                )
+            )
+        );
+
+    if (stepMode === 15) {
+
+        let vals =
+            [0, 15, 30, 45];
+
+        pickerMinute =
+            vals[
+            Math.max(
+                0,
+                Math.min(
+                    3,
+                    Math.round(
+                        minuteWheel.scrollTop / 60
+                    )
+                )
+            )
+            ];
+
+    }
+    else {
+
+        pickerMinute =
+            Math.max(
+                0,
+                Math.min(
+                    59,
+                    Math.round(
+                        minuteWheel.scrollTop / 60
+                    )
+                )
+            );
+
+    }
+
+    highlightActive();
+
+}
+
+function highlightActive() {
+
+    document
+        .querySelectorAll(
+            "#hourWheel .wheelItem"
+        )
+        .forEach((el, index) => {
+
+            el.classList.toggle(
+                "active",
+                index === pickerHour
+            );
+
+        });
+
+    document
+        .querySelectorAll(
+            "#minuteWheel .wheelItem"
+        )
+        .forEach((el, index) => {
+
+            if (stepMode === 15) {
+
+                el.classList.toggle(
+                    "active",
+                    index ===
+                    [0, 15, 30, 45]
+                        .indexOf(
+                            pickerMinute
+                        )
+                );
+
+            }
+            else {
+
+                el.classList.toggle(
+                    "active",
+                    index === pickerMinute
+                );
+
+            }
+
+        });
+
+}
+
+function closePicker() {
+
+    document
+        .getElementById("pickerOverlay")
+        .style.display =
+        "none";
+
+}
+
+function applyPicker() {
+
+    let value =
+
+        String(pickerHour)
+            .padStart(2, "0")
+
+        +
+
+        ":"
+
+        +
+
+        String(pickerMinute)
+            .padStart(2, "0");
+
+    let entry =
+        entries.find(
+            x => x.id == pickerId
+        );
+
+    entry[pickerField] =
+        value;
+
+    save();
+
+    render();
+
+    closePicker();
+
+    vibrate();
+
+}
+
+/* ===========================
+   RENDER
+=========================== */
+
+function render() {
+
+    const container =
+        document.getElementById("entries");
+
+    container.innerHTML = "";
+
+    entries.forEach(entry => {
+
+        let runtime =
+            getDuration(
+                entry.start,
+                entry.end
+            );
+
+        let disableDelete =
+            entries.length === 1;
+
+        container.innerHTML += `
 
 <div class="card">
 
@@ -253,6 +609,7 @@ Clear
 
 <button
 class="danger"
+${disableDelete ? "disabled" : ""}
 onclick="removeEntry('${entry.id}')">
 
 Delete
@@ -265,124 +622,47 @@ Delete
 
 `;
 
-});
+    });
 
-calculate();
-
-save();
+    calculate();
 
 }
 
-function startNow(id){
+function save() {
 
-const e =
-entries.find(x=>x.id==id);
-
-e.start =
-currentTime();
-
-save();
-
-render();
+    localStorage.setItem(
+        "runtime",
+        JSON.stringify(entries)
+    );
 
 }
 
-function endNow(id){
+function load() {
 
-const e =
-entries.find(x=>x.id==id);
+    const saved =
+        localStorage.getItem("runtime");
 
-e.end =
-currentTime();
+    if (saved) {
 
-save();
+        entries =
+            JSON.parse(saved);
 
-render();
+    }
 
-}
+    if (entries.length === 0) {
 
-function currentTime(){
+        entries.push({
 
-let now =
-new Date();
+            id: Date.now(),
 
-if(stepMode===15){
+            start: "",
+            end: ""
 
-let mins =
-Math.round(
-now.getMinutes()/15
-)*15;
+        });
 
-if(mins===60){
+    }
 
-now.setHours(
-now.getHours()+1
-);
-
-mins=0;
-
-}
-
-now.setMinutes(
-mins,
-0,
-0
-);
-
-}
-
-return
-String(now.getHours()).padStart(2,'0')
-+
-":"
-+
-String(now.getMinutes()).padStart(2,'0');
-
-}
-
-function openTimePicker(id,field){
-
-alert(
-"Custom iOS wheel picker coming in Phase 2."
-);
-
-}
-
-function save(){
-
-localStorage.setItem(
-"runtime",
-JSON.stringify(entries)
-);
-
-}
-
-function load(){
-
-const saved =
-localStorage.getItem("runtime");
-
-if(saved){
-
-entries =
-JSON.parse(saved);
-
-}
-
-if(entries.length===0){
-
-entries.push({
-
-id:Date.now(),
-
-start:"",
-end:""
-
-});
-
-}
-
-render();
+    render();
 
 }
 
