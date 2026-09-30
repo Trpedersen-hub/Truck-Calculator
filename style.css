@@ -2,91 +2,241 @@
 margin: 0;
 padding: 0;
 box-sizing: border-box;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
  
 body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 background: #f2f2f7;
-color: #000;
-padding: 24px;
+color: #1c1c1e;
+padding-bottom: 90px;
 }
  
-h1 {
+.hidden {
+display: none;
+}
+ 
+.view {
+padding: 20px;
+max-width: 700px;
+margin: 0 auto;
+}
+ 
+.header {
 text-align: center;
-margin-bottom: 30px;
-font-size: 32px;
-font-weight: 700;
-}
- 
-label {
-display: block;
-margin-bottom: 8px;
-font-weight: 600;
-color: #555;
-}
- 
-input {
-width: 100%;
-padding: 14px;
 margin-bottom: 20px;
-border: none;
-border-radius: 12px;
-background: white;
-font-size: 18px;
+}
+ 
+.header h1 {
+font-size: 32px;
+margin-bottom: 8px;
+}
+ 
+#todayDate {
+color: #8e8e93;
+font-size: 16px;
+}
+ 
+.page-header {
+display: flex;
+align-items: center;
+gap: 15px;
+margin-bottom: 20px;
+}
+ 
+.page-header h2 {
+font-size: 24px;
 }
  
 .card {
 background: white;
 border-radius: 16px;
 padding: 20px;
-margin-bottom: 20px;
+margin-bottom: 16px;
+box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
  
-.result {
-font-size: 24px;
-font-weight: 700;
-margin-top: 10px;
-}
- 
-.result-label {
+label {
+display: block;
+margin-bottom: 8px;
+margin-top: 12px;
+color: #636366;
 font-size: 14px;
-color: #666;
-margin-bottom: 5px;
-}
- 
-.bottom-tabs {
-position: fixed;
-bottom: 0;
-left: 0;
-right: 0;
- 
-display: flex;
-justify-content: space-around;
- 
-background: rgba(255,255,255,0.95);
-backdrop-filter: blur(20px);
- 
-padding: 12px;
-border-top: 1px solid #ddd;
-}
- 
-.tab {
-text-align: center;
-color: #888;
-font-size: 12px;
-}
- 
-.tab.active {
-color: #007aff;
 font-weight: 600;
 }
  
-.tab-icon {
-display: block;
-font-size: 22px;
-margin-bottom: 4px;
+label:first-child {
+margin-top: 0;
 }
  
-.content {
-padding-bottom: 90px;
+input {
+width: 100%;
+padding: 14px;
+font-size: 18px;
+border: 1px solid #d1d1d6;
+border-radius: 12px;
+background: #fff;
+}
+ 
+input:focus {
+outline: none;
+border-color: #007aff;
+}
+ 
+.primary-btn {
+width: 100%;
+background: #007aff;
+color: white;
+border: none;
+border-radius: 14px;
+padding: 16px;
+font-size: 18px;
+font-weight: 600;
+cursor: pointer;
+margin-bottom: 20px;
+}
+ 
+.primary-btn:active {
+opacity: .8;
+}
+ 
+.back-btn {
+background: none;
+border: none;
+color: #007aff;
+font-size: 18px;
+cursor: pointer;
+}
+ 
+.summary-card {
+text-align: center;
+}
+ 
+.summary-label {
+color: #8e8e93;
+font-size: 14px;
+letter-spacing: 1px;
+margin-bottom: 10px;
+}
+ 
+.summary-value {
+color: #007aff;
+font-size: 52px;
+font-weight: 700;
+}
+ 
+.total-card {
+text-align: center;
+}
+ 
+.total-label {
+color: #8e8e93;
+font-size: 14px;
+margin-bottom: 10px;
+}
+ 
+.total-hours {
+font-size: 64px;
+font-weight: 700;
+color: #007aff;
+}
+ 
+.small-text {
+color: #8e8e93;
+margin-top: 8px;
+}
+ 
+.job-card {
+background: white;
+border-radius: 16px;
+padding: 18px;
+margin-bottom: 14px;
+cursor: pointer;
+box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+ 
+.job-card:hover {
+transform: translateY(-1px);
+}
+ 
+.job-number {
+font-size: 14px;
+font-weight: 700;
+color: #007aff;
+}
+ 
+.job-name {
+font-size: 20px;
+font-weight: 600;
+margin-top: 6px;
+}
+ 
+.job-hours {
+margin-top: 10px;
+color: #636366;
+}
+ 
+.bottom-nav {
+position: fixed;
+left: 0;
+right: 0;
+bottom: 0;
+ 
+display: flex;
+ 
+background: rgba(255,255,255,.95);
+backdrop-filter: blur(20px);
+ 
+border-top: 1px solid #d1d1d6;
+}
+ 
+.bottom-nav button {
+flex: 1;
+border: none;
+background: none;
+padding: 16px;
+font-size: 16px;
+font-weight: 600;
+color: #007aff;
+cursor: pointer;
+}
+ 
+.bottom-nav button:active {
+background: #f2f2f7;
+}
+ 
+#calendarResults {
+min-height: 120px;
+}
+ 
+@media (prefers-color-scheme: dark) {
+ 
+body {
+background: #000;
+color: #fff;
+}
+ 
+.card,
+.job-card {
+background: #1c1c1e;
+}
+ 
+input {
+background: #2c2c2e;
+border-color: #3a3a3c;
+color: white;
+}
+ 
+.bottom-nav {
+background: rgba(28,28,30,.95);
+border-top-color: #3a3a3c;
+}
+ 
+.small-text,
+.summary-label,
+.total-label,
+label,
+#todayDate,
+.job-hours {
+color: #aeaeb2;
+}
 }
