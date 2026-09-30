@@ -1,50 +1,43 @@
 alert("SCRIPT IS LOADING");
  
-// Hide all screens
 function hideAllViews() {
-document.getElementById("dashboardView").classList.add("hidden");
-document.getElementById("newJobView").classList.add("hidden");
-document.getElementById("jobDetailView").classList.add("hidden");
-document.getElementById("calendarView").classList.add("hidden");
+ 
+document.getElementById("dashboardView").style.display = "none";
+document.getElementById("newJobView").style.display = "none";
+document.getElementById("jobDetailView").style.display = "none";
+document.getElementById("calendarView").style.display = "none";
+ 
 }
  
-// Dashboard
 function showDashboard() {
+ 
 hideAllViews();
  
-document
-.getElementById("dashboardView")
-.classList.remove("hidden");
+document.getElementById("dashboardView").style.display = "block";
+ 
 }
  
-// New Job
 function showNewJob() {
+ 
 hideAllViews();
  
-document
-.getElementById("newJobView")
-.classList.remove("hidden");
+document.getElementById("newJobView").style.display = "block";
+ 
 }
  
-// Calendar
 function showCalendar() {
+ 
 hideAllViews();
  
-document
-.getElementById("calendarView")
-.classList.remove("hidden");
+document.getElementById("calendarView").style.display = "block";
+ 
 }
  
-// Startup
-window.onload = function () {
+window.onload = function() {
  
-const todayDate =
-document.getElementById("todayDate");
- 
-if (todayDate) {
-todayDate.textContent =
+document.getElementById("todayDate").innerText =
 new Date().toLocaleDateString();
-}
  
 showDashboard();
+ 
 };
