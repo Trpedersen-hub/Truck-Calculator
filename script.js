@@ -1,25 +1,21 @@
-alert("SCRIPT IS LOADING");
+alert("1 - Script Loaded");
  
 window.onload = function () {
  
-alert(
-"Dashboard: " +
-document.getElementById("dashboardView")
-);
+alert("2 - Window Loaded");
+ 
+const dashboard =
+document.getElementById("dashboardView");
  
 alert(
-"New Job: " +
-document.getElementById("newJobView")
+"3 - Dashboard Found? " +
+(dashboard !== null)
 );
  
-alert(
-"Job Detail: " +
-document.getElementById("jobDetailView")
-);
+if (dashboard) {
+dashboard.style.display = "block";
+}
  
-alert(
-"Calendar: " +
-document.getElementById("calendarView")
-);
+alert("4 - Done");
  
 };
