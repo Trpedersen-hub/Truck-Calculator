@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Hours</title>
+ 
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
  
 <div class="content">
@@ -5,31 +14,26 @@
 <h1>Work Hours</h1>
  
 <div class="card">
-<label>Start Time</label>
+<label for="startTime">Start Time</label>
 <input type="time" id="startTime">
 </div>
  
 <div class="card">
-<label>End Time</label>
+<label for="endTime">End Time</label>
 <input type="time" id="endTime">
 </div>
  
 <div class="card">
-<label>Downtime (minutes)</label>
-<input type="number" id="downtime" value="0">
+<label for="downtime">Downtime (minutes)</label>
+<input type="number" id="downtime" value="0" min="0">
  
-<label>Standby (minutes)</label>
-<input type="number" id="standby" value="0">
+<label for="standby">Standby (minutes)</label>
+<input type="number" id="standby" value="0" min="0">
 </div>
  
 <div class="card">
 <div class="result-label">TOTAL TIME</div>
 <div class="result" id="total">0h 0m</div>
- 
-<br>
- 
-<div class="result-label">BILLABLE TIME</div>
-<div class="result" id="billable">0h 0m</div>
 </div>
  
 </div>
@@ -42,4 +46,7 @@
 <div class="tab active">🚛<br>Work Hours</div>
 </div>
  
+<script src="script.js"></script>
+ 
 </body>
+</html>
