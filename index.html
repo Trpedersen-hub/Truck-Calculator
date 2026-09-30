@@ -3,47 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Work Hours</title>
+<title>Fleet Time Tracker</title>
  
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
  
-<div class="content">
+<!-- DASHBOARD -->
  
-<h1>Work Hours</h1>
+<div id="dashboardView" class="view">
  
-<div class="card">
-<label for="startTime">Start Time</label>
-<input type="time" id="startTime">
+<div class="header">
+<h1>🚛 Fleet Time Tracker</h1>
+<div id="todayDate"></div>
+</div>
+ 
+<div class="card summary-card">
+<div class="summary-label">TODAY'S TOTAL</div>
+<div id="dailyTotal" class="summary-value">0.00 hrs</div>
+</div>
+ 
+<button class="primary-btn" onclick="showNewJob()">
++ New Job
+</button>
+ 
+<div id="jobList"></div>
+ 
+</div>
+ 
+ 
+ 
+<!-- NEW JOB -->
+ 
+<div id="newJobView" class="view hidden">
+ 
+<div class="page-header">
+ 
+<button class="back-btn" onclick="showDashboard()">
+← Back
+</button>
+ 
+<h2>Create New Job</h2>
+ 
 </div>
  
 <div class="card">
-<label for="endTime">End Time</label>
-<input type="time" id="endTime">
+ 
+<label>Job Number</label>
+<input id="jobNumber" type="text">
+ 
+<label>Job Name</label>
+<input id="jobName" type="text">
+ 
+<label>Project Manager</label>
+<input id="projectManager" type="text">
+ 
+<label>Customer</label>
+<input id="customer" type="text">
+ 
+<label>Location</label>
+<input id="location" type="text">
+ 
+<button class="primary-btn" onclick="saveJob()">
+Save Job
+</button>
+ 
+</div>
+ 
+</div>
+ 
+ 
+ 
+<!-- JOB DETAIL -->
+ 
+<div id="jobDetailView" class="view hidden">
+ 
+<div class="page-header">
+ 
+<button class="back-btn" onclick="showDashboard()">
+← Dashboard
+</button>
+ 
 </div>
  
 <div class="card">
-<label for="downtime">Downtime (minutes)</label>
-<input type="number" id="downtime" value="0" min="0">
  
-<label for="standby">Standby (minutes)</label>
-<input type="number" id="standby" value="0" min="0">
+<h2 id="detailJobNumber"></h2>
+ 
+<h3 id="detailJobName"></h3>
+ 
+<div id="detailDate" class="small-text"></div>
+ 
 </div>
  
 <div class="card">
-<div class="result-label">TOTAL TIME</div>
-<div class="result" id="total">0h 0m</div>
+ 
+<label>Start Time</label>
+<input id="startTime" type="time">
+ 
+<label>End Time</label>
+<input id="endTime" type="time">
+ 
+</div>
+ 
+<div class="card total-card">
+ 
+<div class="total-label">
+TOTAL HOURS
+</div>
+ 
+<div id="jobTotal" class="total-hours">
+0.00
 </div>
  
 </div>
  
-<div class="bottom-tabs">
-<div class="tab">🌎<br>World Clock</div>
-<div class="tab">⏰<br>Alarm</div>
-<div class="tab">⏱️<br>Stopwatch</div>
-<div class="tab">⏲️<br>Timer</div>
-<div class="tab active">🚛<br>Work Hours</div>
+</div>
+ 
+ 
+ 
+<!-- CALENDAR -->
+ 
+<div id="calendarView" class="view hidden">
+ 
+<div class="page-header">
+ 
+<button class="back-btn" onclick="showDashboard()">
+← Dashboard
+</button>
+ 
+<h2>Calendar</h2>
+ 
+</div>
+ 
+<div class="card">
+ 
+<input
+type="date"
+id="calendarDate"
+>
+ 
+</div>
+ 
+<div
+id="calendarResults"
+class="card"
+>
+ 
+Select a date
+ 
+</div>
+ 
+</div>
+ 
+ 
+ 
+<!-- NAVIGATION -->
+ 
+<div class="bottom-nav">
+ 
+<button onclick="showDashboard()">
+Home
+</button>
+ 
+<button onclick="showCalendar()">
+Calendar
+</button>
+ 
 </div>
  
 <script src="script.js"></script>
