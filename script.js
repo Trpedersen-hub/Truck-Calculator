@@ -1,21 +1,17 @@
-alert("1 - Script Loaded");
+alert("SCRIPT LOADED");
  
-window.onload = function () {
- 
-alert("2 - Window Loaded");
- 
-const dashboard =
-document.getElementById("dashboardView");
- 
-alert(
-"3 - Dashboard Found? " +
-(dashboard !== null)
-);
- 
-if (dashboard) {
-dashboard.style.display = "block";
+function showDashboard() {
+document.getElementById("dashboardView").style.display = "block";
+document.getElementById("newJobView").style.display = "none";
 }
  
-alert("4 - Done");
+function showNewJob() {
+document.getElementById("dashboardView").style.display = "none";
+document.getElementById("newJobView").style.display = "block";
+}
  
+window.onload = function () {
+alert("WINDOW LOADED");
+showDashboard();
 };
+`
