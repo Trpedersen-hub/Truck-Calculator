@@ -235,3 +235,9 @@ color: #aeaeb2;
 }
 }
 S
+#dashboardView,
+#newJobView,
+#jobDetailView,
+#calendarView {
+display: none;
+}
